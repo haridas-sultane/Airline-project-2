@@ -31,12 +31,8 @@ if __name__ == '__main__':
 
     # planeDf.write.csv(r"C:\Users\harid\PycharmProjects\pyspark pro2\airline project file\plane csv")
 
-    # airlineDf.groupBy(air)select("airlineId","Name").
 
     new=routesDf.groupBy("airline_id","src_airport").count()
     # new.show()
 
     # new.join(airlineDf, airlineDf.airlineId==new.airline_id ,"inner").filter(new.count > 3).select(airlineDf.Name,new.airline_id).show()
-
-    takeOff=routesDf.groupBy("airline_id","src_airport").count().alias("take_off")
-    takeOff.show()

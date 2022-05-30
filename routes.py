@@ -24,51 +24,70 @@ if __name__ == '__main__':
 
 
     newrouteDf2 =newrouteDf2.na.fill(-1).na.fill("(unknown)")
-    newrouteDf2.show()
+    # newrouteDf2.show()
     newrouteDf2.createOrReplaceTempView("route")
 
-    # que4 = spark.sql(
-    #     "select * from airport c where c.iata in (select b.src_airport from(select a.src_airport, sum(takeoff),rank()\
-    #      over (order by sum(takeoff) ) as rankNum from (select src_airport,count(*) as takeoff  from route group by\
-    #       src_airport union select dest_airport,count(*) from route group by dest_airport) a group by a.src_airport)\
-    #        b where rankNum=1) ").
+
 
     ######     OR ###############
 
-    # que4a = spark.sql("select * from airport f where f.iata in (select e.src_airport from (select rank() over \
-    #                     (order by d.total asc) as rankDsc,d.src_airport from( select c.src_airport, (c.takeoff + c.landing) \
-    #                      as total from (select src_airport, takeoff, \
-    #                     landing from (select distinct(src_airport), count(*) as takeoff from route group by src_airport) \
-    #                     a join (select distinct(dest_airport), count(*) as landing from route group by dest_airport) b on \
-    #                     a.src_airport=b.dest_airport) c  order by total desc ) d)e where e.rankDsc=1)"
-    #                   )
-    #
+    que4a = spark.sql("select * from airport f where f.iata in (select e.src_airport from (select rank() over \
+                        (order by d.total asc) as rankDsc,d.src_airport from( select c.src_airport, (c.takeoff + c.landing) \
+                         as total from (select src_airport, takeoff, \
+                        landing from (select distinct(src_airport), count(*) as takeoff from route group by src_airport) \
+                        a join (select distinct(dest_airport), count(*) as landing from route group by dest_airport) b on \
+                        a.src_airport=b.dest_airport) c  order by total desc ) d)e where e.rankDsc=1)"
+                      )
     # que4a.show()
-print("--------------------------------------------------------------")
-    # que5 = spark.sql(
-    #     " select * from airport c where c.iata = (select b.src_airport from(select a.src_airport, sum(takeoff),row_number()\
-    #      over (order by sum(takeoff) desc) as rowNum from (select src_airport,count(*) as takeoff  from route group by\
-    #       src_airport union select dest_airport,count(*) from route group by dest_airport) a group by a.src_airport)\
-    #        b where rowNum=1) ")
+    # print("--------------------------------------------------------------")
+    que5 = spark.sql(
+        " select * from airport c where c.iata = (select b.src_airport from(select a.src_airport, sum(takeoff),row_number()\
+         over (order by sum(takeoff) desc) as rowNum from (select src_airport,count(*) as takeoff  from route group by\
+          src_airport union select dest_airport,count(*) from route group by dest_airport) a group by a.src_airport)\
+           b where rowNum=1) ")
     # que5.show()
                     #######     OR     ########
-    # que5a=spark.sql("select * from airport f where f.iata=(select e.src_airport from (select rank() over \
-    #                 (order by d.total desc) as rankDsc,d.src_airport from( select c.src_airport, (c.takeoff + c.landing) \
-    #                  as total from (select src_airport, takeoff, \
-    #                 landing from (select distinct(src_airport), count(*) as takeoff from route group by src_airport) \
-    #                 a join (select distinct(dest_airport), count(*) as landing from route group by dest_airport) b on \
-    #                 a.src_airport=b.dest_airport) c  order by total desc ) d)e where e.rankDsc=1)"
-    #                 )
-    #
+    que5a=spark.sql("select * from airport f where f.iata=(select e.src_airport from (select rank() over \
+                    (order by d.total desc) as rankDsc,d.src_airport from( select c.src_airport, (c.takeoff + c.landing) \
+                     as total from (select src_airport, takeoff, \
+                    landing from (select distinct(src_airport), count(*) as takeoff from route group by src_airport) \
+                    a join (select distinct(dest_airport), count(*) as landing from route group by dest_airport) b on \
+                    a.src_airport=b.dest_airport) c  order by total desc ) d)e where e.rankDsc=1)"
+                    )
+
     # que5a.show()
 
-print("______________________________________________________________")
+    que2=spark.sql("select distinct( a.Country ) from airport a join airline b on a.Country=b.Country ")
+    que2.show()
 
-    # que2=spark.sql("select distinct( a.Country ) from airport a join airline b on a.Country=b.Country ")
+    que3=spark.sql("select a.Name,b.src_airport,b.airline_id,count(*) from airline a join route b\
+                        on a.airlineId = b.airline_id group by a.Name,b.src_airport,b.airline_id having count(*)>3")
+
+    que4 = spark.sql(
+        "select * from airport c where c.iata in (select b.src_airport from(select a.src_airport, sum(takeoff),rank()\
+         over (order by sum(takeoff) ) as rankNum from (select src_airport,count(*) as takeoff  from route group by\
+          src_airport union select dest_airport,count(*) from route group by dest_airport) a group by a.src_airport)\
+           b where rankNum=1) ")
+
+    que5 = spark.sql(
+        " select * from airport c where c.iata = (select b.src_airport from(select a.src_airport, sum(takeoff),row_number()\
+         over (order by sum(takeoff) desc) as rowNum from (select src_airport,count(*) as takeoff  from route group by\
+          src_airport union select dest_airport,count(*) from route group by dest_airport) a group by a.src_airport)\
+           b where rowNum=1) ")
+
+    que6=spark.sql("select A.airlineId, A.Name airline_name, Ap.Name source_airport, Ap1.Name dest_airport \
+                   from route R \
+                    join airline A on R.airline_id = A.airlineId\
+                   left join airport Ap on R.src_airport_id = Ap.Airport_ID\
+                   left join airport Ap1 on R.dest_airport_id = Ap1.Airport_ID\
+                   where stops=0 order by (A.airlineId) asc")
+    # que6.show()
+    # print(que6.count())
+
     # que2.show()
-
-print("_______________________________________________________________")
-    # que3=spark.sql("select a.Name,b.src_airport,b.airline_id,count(*) from airline a join route b\
-    #                     on a.airlineId = b.airline_id group by a.Name,b.src_airport,b.airline_id having count(*)>3")
-    # que3.show()
-
+    # que4.show()
+    # print(que4.count())
+    # print(que3.show())
+    # que5.show()
+    # que5.show()
+    # print(que5.count())
